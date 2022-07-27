@@ -22,6 +22,7 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup_system)
+        .add_startup_system_to_stage(StartupStage::PostStartup, player_spawn_system)
         .run();
     println!("Hello, world!");
 }
@@ -38,9 +39,15 @@ fn setup_system(
     commands.insert_resource(win_size);
 
     window.set_position(IVec2::new(2780, 0));
+}
 
+fn player_spawn_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    win_size: Res<WinSize>,
+) {
     // Load player sprite
-    let bottom = -win_h / 2.0;
+    let bottom = -win_size.h / 2.0;
     commands.spawn_bundle(SpriteBundle {
         texture: asset_server.load(PLAYER_SPRITE),
         transform: Transform {
