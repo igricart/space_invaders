@@ -19,9 +19,16 @@ fn main() {
     println!("Hello, world!");
 }
 
-fn setup_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut windows: ResMut<Windows>,
+) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    let window = windows.get_primary_mut().unwrap();
+    let (win_w, win_h) = (window.width(), window.height());
 
+    window.set_position(IVec2::new(2780, 0));
     commands.spawn_bundle(SpriteBundle {
         texture: asset_server.load(PLAYER_SPRITE),
         ..Default::default()
