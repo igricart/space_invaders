@@ -8,6 +8,10 @@ const PLAYER_SPRITE: &str = "player_a_01.png";
 const PLAYER_SIZE: (f32, f32) = (144., 75.);
 const SPRITE_SCALE: f32 = 0.5;
 
+// Define game constants
+const TIME_STEP: f32 = 1. / 60.; // 60 fps
+const BASE_SPEED: f32 = 500.;
+
 // Define Resource
 pub struct WinSize {
     pub w: f32,
