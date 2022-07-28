@@ -6,6 +6,8 @@ mod player;
 // Define player sprite
 const PLAYER_SPRITE: &str = "player_a_01.png";
 const PLAYER_SIZE: (f32, f32) = (144., 75.);
+const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
+const PLAYER_LASER_SIZE: (f32, f32) = (9., 54.);
 const SPRITE_SCALE: f32 = 0.5;
 
 // Define game constants
@@ -20,6 +22,7 @@ pub struct WinSize {
 
 struct GameTextures {
     player: Handle<Image>,
+    player_laser: Handle<Image>,
 }
 
 fn main() {
@@ -54,6 +57,7 @@ fn setup_system(
     // Game textures
     let game_textures = GameTextures {
         player: asset_server.load(PLAYER_SPRITE),
+        player_laser: asset_server.load(PLAYER_LASER_SPRITE),
     };
     commands.insert_resource(game_textures);
 
