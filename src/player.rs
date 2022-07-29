@@ -59,7 +59,7 @@ fn player_fire_system(
     query: Query<&Transform, With<Player>>,
 ) {
     if let Ok(player_tf) = query.get_single() {
-        if kb.pressed(KeyCode::Space) {
+        if kb.just_pressed(KeyCode::Space) {
             let (x, y) = (player_tf.translation.x, player_tf.translation.y);
 
             commands
