@@ -10,3 +10,8 @@ pub struct Velocity {
 // Player Components
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct Movable {
+    pub auto_despawn: bool,
+}

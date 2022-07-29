@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use components::{Movable, Velocity};
 
 mod components;
 mod player;
@@ -37,6 +38,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(player::PlayerPlugin)
         .add_startup_system(setup_system)
+        .add_system(movable_system)
         .run();
     println!("Hello, world!");
 }
@@ -62,4 +64,27 @@ fn setup_system(
     commands.insert_resource(game_textures);
 
     window.set_position(IVec2::new(2780, 0));
+}
+
+fn movable_system(
+    mut commands: Commands,
+    win_size: Res<WinSize>,
+    mut query: Query<(Entity, &Velocity, &mut Transform, &Movable)>,
+) {
+    for (entity, velocity, mut transform, movable) in query.iter_mut() {
+        let translation = &mut transform.translation;
+        translation.x += velocity.x * TIME_STEP * BASE_SPEED;
+        translation.y += velocity.y * TIME_STEP * BASE_SPEED;
+
+        if movable.auto_despawn {
+            const MARGIN: f32 = 200.;
+            if translation.x < -win_size.w / 2.0 - MARGIN
+                || translation.x > win_size.w / 2.0 + MARGIN
+                || translation.y < -win_size.h / 2.0 - MARGIN
+                || translation.y > win_size.h / 2.0 + MARGIN
+            {
+                commands.entity(entity).despawn();
+            }
+        }
+    }
 }
