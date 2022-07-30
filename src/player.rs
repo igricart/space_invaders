@@ -61,19 +61,24 @@ fn player_fire_system(
     if let Ok(player_tf) = query.get_single() {
         if kb.just_pressed(KeyCode::Space) {
             let (x, y) = (player_tf.translation.x, player_tf.translation.y);
+            let x_offset = PLAYER_SIZE.0 / 2. * SPRITE_SCALE - 5.;
 
-            commands
-                .spawn_bundle(SpriteBundle {
-                    texture: game_textures.player_laser.clone(),
-                    transform: Transform {
-                        translation: Vec3::new(x, y, 0.0),
-                        scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.),
+            let mut spawn_laser = |x_offset: f32| {
+                commands
+                    .spawn_bundle(SpriteBundle {
+                        texture: game_textures.player_laser.clone(),
+                        transform: Transform {
+                            translation: Vec3::new(x + x_offset, y + 15., 0.0),
+                            scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.),
+                            ..Default::default()
+                        },
                         ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(Movable { auto_despawn: true })
-                .insert(Velocity { x: 0., y: 1. });
+                    })
+                    .insert(Movable { auto_despawn: true })
+                    .insert(Velocity { x: 0., y: 1. });
+            };
+            spawn_laser(x_offset);
+            spawn_laser(-x_offset);
         }
     }
 }
