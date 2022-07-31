@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use components::{Movable, Velocity};
+use bevy::{math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide};
+use components::{Enemy, FromPlayer, Laser, Movable, SpriteSize, Velocity};
 
 mod components;
 mod enemy;
@@ -49,6 +49,7 @@ fn main() {
         .add_plugin(enemy::EnemyPlugin)
         .add_startup_system(setup_system)
         .add_system(movable_system)
+        .add_system(player_laser_hit_enemy_system)
         .run();
     println!("Hello, world!");
 }
@@ -96,6 +97,36 @@ fn movable_system(
                 || translation.y > win_size.h / 2.0 + MARGIN
             {
                 commands.entity(entity).despawn();
+            }
+        }
+    }
+}
+
+fn player_laser_hit_enemy_system(
+    mut commands: Commands,
+    laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
+    enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
+) {
+    // Iterate through the lasers
+    for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
+        let laser_scale = Vec2::from(laser_tf.scale.xy());
+
+        // Iterate through the enemies
+        for (enemy_entity, enemy_tf, enemy_size) in enemy_query.iter() {
+            let enemy_scale = Vec2::from(enemy_tf.scale.xy());
+
+            // Check if the laser and enemy overlap
+            let collision = collide(
+                laser_tf.translation,
+                laser_size.0 * laser_scale.x,
+                enemy_tf.translation,
+                enemy_size.0 * enemy_scale.x,
+            );
+
+            // perform the collision
+            if let Some(_) = collision {
+                commands.entity(enemy_entity).despawn();
+                commands.entity(laser_entity).despawn();
             }
         }
     }
