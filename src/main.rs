@@ -1,4 +1,4 @@
-use bevy::{math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide};
+use bevy::{math::Vec3Swizzles, prelude::*, sprite::collide_aabb::collide, utils::HashSet};
 use components::{
     Enemy, Explosion, ExplosionTimer, ExplosionToSpawn, FromPlayer, Laser, Movable, SpriteSize,
     Velocity,
@@ -124,12 +124,22 @@ fn player_laser_hit_enemy_system(
     laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
 ) {
+    // Fix multiple lasers hitting same enemy
+    let mut despawned_entities: HashSet<Entity> = HashSet::new();
     // Iterate through the lasers
     for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
+        if despawned_entities.contains(&laser_entity) {
+            continue;
+        }
         let laser_scale = Vec2::from(laser_tf.scale.xy());
 
         // Iterate through the enemies
         for (enemy_entity, enemy_tf, enemy_size) in enemy_query.iter() {
+            if despawned_entities.contains(&enemy_entity)
+                || despawned_entities.contains(&laser_entity)
+            {
+                continue;
+            }
             let enemy_scale = Vec2::from(enemy_tf.scale.xy());
 
             // Check if the laser and enemy overlap
@@ -143,7 +153,10 @@ fn player_laser_hit_enemy_system(
             // perform the collision
             if let Some(_) = collision {
                 commands.entity(enemy_entity).despawn();
+                despawned_entities.insert(enemy_entity);
                 commands.entity(laser_entity).despawn();
+                despawned_entities.insert(laser_entity);
+
                 commands
                     .spawn()
                     .insert(ExplosionToSpawn(enemy_tf.translation.clone()));
