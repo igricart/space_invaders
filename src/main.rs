@@ -29,6 +29,8 @@ const EXPLOSION_LEN: usize = 16;
 const TIME_STEP: f32 = 1. / 60.; // 60 fps
 const BASE_SPEED: f32 = 500.;
 
+const ENEMY_MAX: u32 = 4;
+
 // Define Resource
 pub struct WinSize {
     pub w: f32,
@@ -42,6 +44,8 @@ struct GameTextures {
     enemy_laser: Handle<Image>,
     explosion: Handle<TextureAtlas>,
 }
+
+struct EnemyCount(u32);
 
 fn main() {
     App::new()
@@ -92,7 +96,7 @@ fn setup_system(
         explosion,
     };
     commands.insert_resource(game_textures);
-
+    commands.insert_resource(EnemyCount(0));
     window.set_position(IVec2::new(2780, 0));
 }
 
@@ -121,6 +125,7 @@ fn movable_system(
 
 fn player_laser_hit_enemy_system(
     mut commands: Commands,
+    mut enemy_count: ResMut<EnemyCount>,
     laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
 ) {
@@ -154,6 +159,7 @@ fn player_laser_hit_enemy_system(
             if let Some(_) = collision {
                 commands.entity(enemy_entity).despawn();
                 despawned_entities.insert(enemy_entity);
+                enemy_count.0 -= 1;
                 commands.entity(laser_entity).despawn();
                 despawned_entities.insert(laser_entity);
 
