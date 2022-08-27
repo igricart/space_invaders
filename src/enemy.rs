@@ -1,6 +1,7 @@
 use crate::{
     components::{Enemy, FromEnemy, Laser, Movable, SpriteSize, Velocity},
-    EnemyCount, GameTextures, WinSize, ENEMY_LASER_SIZE, ENEMY_MAX, ENEMY_SIZE, SPRITE_SCALE,
+    EnemyCount, GameTextures, WinSize, BASE_SPEED, ENEMY_LASER_SIZE, ENEMY_MAX, ENEMY_SIZE,
+    SPRITE_SCALE, TIME_STEP,
 };
 use bevy::{core::FixedTimestep, ecs::schedule::ShouldRun, prelude::*};
 use core::f32::consts::PI;
@@ -18,7 +19,8 @@ impl Plugin for EnemyPlugin {
             SystemSet::new()
                 .with_run_criteria(enemy_fire_criteria)
                 .with_system(enemy_fire_system),
-        );
+        )
+        .add_system(enemy_movement_system);
     }
 }
 
@@ -85,5 +87,13 @@ fn enemy_fire_system(
             .insert(FromEnemy)
             .insert(Movable { auto_despawn: true })
             .insert(Velocity { x: 0., y: -1. });
+    }
+}
+
+fn enemy_movement_system(mut query: Query<&mut Transform, With<Enemy>>) {
+    for mut transform in query.iter_mut() {
+        let translation = &mut transform.translation;
+        translation.x += BASE_SPEED * TIME_STEP / 4.;
+        translation.y += BASE_SPEED * TIME_STEP / 4.;
     }
 }
