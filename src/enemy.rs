@@ -90,10 +90,43 @@ fn enemy_fire_system(
     }
 }
 
-fn enemy_movement_system(mut query: Query<&mut Transform, With<Enemy>>) {
+fn enemy_movement_system(time: Res<Time>, mut query: Query<&mut Transform, With<Enemy>>) {
+    let now = time.seconds_since_startup() as f32;
+
     for mut transform in query.iter_mut() {
+        let (x_org, y_org) = (transform.translation.x, transform.translation.y);
+
+        let max_distance = TIME_STEP * BASE_SPEED;
+
+        // Fixtures (hardcoded for now)
+        let dir: f32 = -1.;
+        let (x_pivot, y_pivot) = (0., 0.);
+        let (x_radius, y_radius) = (200., 130.);
+
+        // Compute next angle (based on time now)
+        let angle = dir * BASE_SPEED * TIME_STEP * now % 360. / PI;
+
+        // Compute target X/Y
+        let x_dst = x_radius * angle.cos() + x_pivot;
+        let y_dst = y_radius * angle.sin() + y_pivot;
+
+        // Compute distance
+        let dx = x_org - x_dst;
+        let dy = y_org - y_dst;
+        let distance = (dx * dx + dy * dy).sqrt();
+        let distance_ratio = if distance != 0. {
+            max_distance / distance
+        } else {
+            0.
+        };
+
+        // Compute final X/Y
+        let x = x_org - dx * distance_ratio;
+        let x = if dx > 0. { x.max(x_dst) } else { x.min(x_dst) };
+        let y = y_org - dy * distance_ratio;
+        let y = if dy > 0. { y.max(y_dst) } else { y.min(y_dst) };
+
         let translation = &mut transform.translation;
-        translation.x += BASE_SPEED * TIME_STEP / 4.;
-        translation.y += BASE_SPEED * TIME_STEP / 4.;
+        (translation.x, translation.y) = (x, y);
     }
 }
